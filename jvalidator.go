@@ -115,6 +115,6 @@ func (j *JValidator) IsValid() bool {
 	return len(j.Errors) == 0
 }
 
-func (j *JValidator) ToJson() ([]byte, error) {
+func (j *JValidator) ToJSON() ([]byte, error) {
 	return json.Marshal(j.Errors)
 }
