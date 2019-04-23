@@ -43,7 +43,7 @@ func (j *JValidator) Required(names ...string) {
 		_, ok := j.data[name]
 		if !ok {
 			j.Invalids.Add(name, "Cannot be blank.")
-			return
+			continue
 		}
 
 		val, ok := j.data[name].(string)
@@ -72,7 +72,11 @@ func (j *JValidator) Number(names ...string) {
 }
 
 func (j *JValidator) MaxChar(name string, d int) {
-	val := j.data[name].(string)
+	val, ok := j.data[name].(string)
+	if !ok {
+		j.Invalids.Add(name, "Invalid value")
+		return
+	}
 	if val == "" {
 		return
 	}
@@ -82,7 +86,11 @@ func (j *JValidator) MaxChar(name string, d int) {
 }
 
 func (j *JValidator) MinChar(name string, d int) {
-	val := j.data[name].(string)
+	val, ok := j.data[name].(string)
+	if !ok {
+		j.Invalids.Add(name, "Invalid value")
+		return
+	}
 	if val == "" {
 		return
 	}
@@ -92,7 +100,11 @@ func (j *JValidator) MinChar(name string, d int) {
 }
 
 func (j *JValidator) MatchPattern(name string, pattern *regexp.Regexp) {
-	val := j.data[name].(string)
+	val, ok := j.data[name].(string)
+	if !ok {
+		j.Invalids.Add(name, "Invalid value")
+		return
+	}
 	if val == "" {
 		return
 	}
@@ -102,7 +114,11 @@ func (j *JValidator) MatchPattern(name string, pattern *regexp.Regexp) {
 }
 
 func (j *JValidator) Email(name string) {
-	val := j.data[name].(string)
+	val, ok := j.data[name].(string)
+	if !ok {
+		j.Invalids.Add(name, "Invalid value")
+		return
+	}
 	if val == "" {
 		return
 	}
