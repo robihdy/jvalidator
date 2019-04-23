@@ -15,10 +15,10 @@ var (
 	EmailPattern = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
-// JValidator is a struct containing data (unmarshaled json data) and Errors (invalid json values).
+// JValidator is a struct containing data (unmarshaled json data) and Invalids (invalid json values).
 type JValidator struct {
-	data   map[string]interface{}
-	Errors errors
+	data     map[string]interface{}
+	Invalids invalids
 }
 
 // New is a function to generate a JValidator struct.
@@ -33,8 +33,8 @@ func New(jsonData []byte, v interface{}) (*JValidator, error) {
 		return nil, err
 	}
 	return &JValidator{
-		data:   data,
-		Errors: errors(map[string][]string{}),
+		data:     data,
+		Invalids: invalids(map[string][]string{}),
 	}, nil
 }
 
@@ -42,13 +42,13 @@ func (j *JValidator) Required(names ...string) {
 	for _, name := range names {
 		_, ok := j.data[name]
 		if !ok {
-			j.Errors.Add(name, "Cannot be blank.")
+			j.Invalids.Add(name, "Cannot be blank.")
 			return
 		}
 
 		val, ok := j.data[name].(string)
 		if ok && strings.TrimSpace(val) == "" {
-			j.Errors.Add(name, "Cannot be blank.")
+			j.Invalids.Add(name, "Cannot be blank.")
 		}
 	}
 }
@@ -57,7 +57,7 @@ func (j *JValidator) String(names ...string) {
 	for _, name := range names {
 		_, ok := j.data[name].(string)
 		if !ok {
-			j.Errors.Add(name, "Must contain a string value.")
+			j.Invalids.Add(name, "Must contain a string value.")
 		}
 	}
 }
@@ -66,7 +66,7 @@ func (j *JValidator) Number(names ...string) {
 	for _, name := range names {
 		_, ok := j.data[name].(float64)
 		if !ok {
-			j.Errors.Add(name, "Must contain a number.")
+			j.Invalids.Add(name, "Must contain a number.")
 		}
 	}
 }
@@ -77,7 +77,7 @@ func (j *JValidator) MaxChar(name string, d int) {
 		return
 	}
 	if utf8.RuneCountInString(val) > d {
-		j.Errors.Add(name, fmt.Sprintf("Too long (maximum is %d characters).", d))
+		j.Invalids.Add(name, fmt.Sprintf("Too long (maximum is %d characters).", d))
 	}
 }
 
@@ -87,7 +87,7 @@ func (j *JValidator) MinChar(name string, d int) {
 		return
 	}
 	if utf8.RuneCountInString(val) < d {
-		j.Errors.Add(name, fmt.Sprintf("Too short (minimum is %d characters).", d))
+		j.Invalids.Add(name, fmt.Sprintf("Too short (minimum is %d characters).", d))
 	}
 }
 
@@ -97,7 +97,7 @@ func (j *JValidator) MatchPattern(name string, pattern *regexp.Regexp) {
 		return
 	}
 	if !pattern.MatchString(val) {
-		j.Errors.Add(name, "Invalid value.")
+		j.Invalids.Add(name, "Invalid value.")
 	}
 }
 
@@ -107,14 +107,14 @@ func (j *JValidator) Email(name string) {
 		return
 	}
 	if !EmailPattern.MatchString(val) {
-		j.Errors.Add(name, "Must contain a valid email address.")
+		j.Invalids.Add(name, "Must contain a valid email address.")
 	}
 }
 
 func (j *JValidator) IsValid() bool {
-	return len(j.Errors) == 0
+	return len(j.Invalids) == 0
 }
 
 func (j *JValidator) ToJSON() ([]byte, error) {
-	return json.Marshal(j.Errors)
+	return json.Marshal(j.Invalids)
 }
